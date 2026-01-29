@@ -25,7 +25,9 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  int playerPosition = 1;
+  int player1Position = 1;
+  int player2Position = 1;
+  bool isPlayer1Turn = true;
 
   Map<int, int> snakeAndLadders = {
     16: 6,
@@ -48,27 +50,61 @@ class _GameScreenState extends State<GameScreen> {
     80: 100,
   };
 
+  void showWinnerDialog(String winner) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("$winner wins!"),
+        content: const Text("Congratulations 🎉"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              setState(() {
+                player1Position = 1;
+                player2Position = 1;
+                isPlayer1Turn = true;
+              });
+            },
+            child: const Text("Play Again"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void rollDice() {
     setState(() {
       int dice = (1 + (6 * (DateTime.now().millisecondsSinceEpoch % 6) / 6))
           .floor();
-      playerPosition += dice;
 
-      if (playerPosition > 100) playerPosition = 100;
+      if (isPlayer1Turn) {
+        player1Position += dice;
+        if (player1Position > 100) player1Position = 100;
 
-      if (snakeAndLadders.containsKey(playerPosition)) {
-        playerPosition = snakeAndLadders[playerPosition]!;
+        if (snakeAndLadders.containsKey(player1Position)) {
+          player1Position = snakeAndLadders[player1Position]!;
+        }
+
+        if (player1Position == 100) {
+          showWinnerDialog("Player 1");
+          return;
+        }
+      } else {
+        player2Position += dice;
+        if (player2Position > 100) player2Position = 100;
+
+        if (snakeAndLadders.containsKey(player2Position)) {
+          player2Position = snakeAndLadders[player2Position]!;
+        }
+
+        if (player2Position == 100) {
+          showWinnerDialog("Player 2");
+          return;
+        }
       }
 
-      if (playerPosition == 100) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("You Win!"),
-            content: const Text("Congratulations 🎉"),
-          ),
-        );
-      }
+      isPlayer1Turn = !isPlayer1Turn;
     });
   }
 
@@ -87,17 +123,44 @@ class _GameScreenState extends State<GameScreen> {
               ),
               itemBuilder: (context, index) {
                 int cellNumber = 100 - index;
-                bool isPlayerHere = cellNumber == playerPosition;
+                bool isPlayer1Here = cellNumber == player1Position;
+                bool isPlayer2Here = cellNumber == player2Position;
 
                 return Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.black),
-                    color: isPlayerHere ? Colors.red : Colors.green[200],
+                    color: Colors.green[200],
                   ),
-                  child: Center(child: Text(cellNumber.toString())),
+                  child: Stack(
+                    children: [
+                      Center(child: Text(cellNumber.toString())),
+
+                      if (isPlayer1Here)
+                        const Align(
+                          alignment: Alignment.topLeft,
+                          child: CircleAvatar(
+                            radius: 8,
+                            backgroundColor: Colors.red,
+                          ),
+                        ),
+
+                      if (isPlayer2Here)
+                        const Align(
+                          alignment: Alignment.bottomRight,
+                          child: CircleAvatar(
+                            radius: 8,
+                            backgroundColor: Colors.blue,
+                          ),
+                        ),
+                    ],
+                  ),
                 );
               },
             ),
+          ),
+          Text(
+            isPlayer1Turn ? "Player 1's Turn" : "Player 2's Turn",
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           ElevatedButton(onPressed: rollDice, child: const Text("Roll Dice")),
         ],
