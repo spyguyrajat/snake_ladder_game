@@ -39,6 +39,7 @@ class _GameScreenState extends State<GameScreen> {
   bool isRolling = false;
 
   Map<int, int> snakeAndLadders = {
+    // Snakes
     16: 6,
     47: 26,
     49: 11,
@@ -48,7 +49,9 @@ class _GameScreenState extends State<GameScreen> {
     93: 73,
     95: 75,
     98: 78,
-    1: 38,
+
+    //Ladders
+    2: 38,
     4: 14,
     9: 31,
     21: 42,
@@ -137,45 +140,66 @@ class _GameScreenState extends State<GameScreen> {
       body: Column(
         children: [
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(8),
-              itemCount: 100,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 10,
-              ),
-              itemBuilder: (context, index) {
-                int cellNumber = 100 - index;
-                bool isPlayer1Here = cellNumber == player1Position;
-                bool isPlayer2Here = cellNumber == player2Position;
-
-                return Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    color: Colors.green[200],
-                  ),
-                  child: Stack(
-                    children: [
-                      Center(child: Text(cellNumber.toString())),
-
-                      if (isPlayer1Here)
-                        const Align(
-                          alignment: Alignment.topLeft,
-                          child: CircleAvatar(
-                            radius: 8,
-                            backgroundColor: Colors.red,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    GridView.builder(
+                      padding: EdgeInsets.zero,
+                      itemCount: 100,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 10,
                           ),
-                        ),
+                      itemBuilder: (context, index) {
+                        int row = index ~/ 10;
+                        int col = index % 10;
 
-                      if (isPlayer2Here)
-                        const Align(
-                          alignment: Alignment.bottomRight,
-                          child: CircleAvatar(
-                            radius: 8,
-                            backgroundColor: Colors.blue,
+                        if (row.isEven) {
+                          col = 9 - col;
+                        }
+
+                        int cellNumber = (9 - row) * 10 + col + 1;
+                        bool isPlayer1Here = cellNumber == player1Position;
+                        bool isPlayer2Here = cellNumber == player2Position;
+
+                        return Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.black),
+                            color: Colors.green[200],
                           ),
-                        ),
-                    ],
-                  ),
+                          child: Stack(
+                            children: [
+                              Center(child: Text(cellNumber.toString())),
+
+                              if (isPlayer1Here)
+                                const Align(
+                                  alignment: Alignment.topLeft,
+                                  child: CircleAvatar(
+                                    radius: 8,
+                                    backgroundColor: Colors.red,
+                                  ),
+                                ),
+
+                              if (isPlayer2Here)
+                                const Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: CircleAvatar(
+                                    radius: 8,
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    CustomPaint(
+                      size: Size(constraints.maxWidth, constraints.maxHeight),
+                      painter: SnakeLadderPainter(snakeAndLadders),
+                    ),
+                  ],
                 );
               },
             ),
@@ -203,4 +227,62 @@ class _GameScreenState extends State<GameScreen> {
       ),
     );
   }
+}
+
+class SnakeLadderPainter extends CustomPainter {
+  final Map<int, int> map;
+
+  SnakeLadderPainter(this.map);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double cellSize = size.width / 10;
+
+    final ladderPaint = Paint()
+      ..color = Colors.brown
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
+
+    final snakePaint = Paint()
+      ..color = Colors.green
+      ..strokeWidth = 6
+      ..style = PaintingStyle.stroke;
+
+    for (var entry in map.entries) {
+      final start = getCellCenter(entry.key, cellSize);
+      final end = getCellCenter(entry.value, cellSize);
+
+      if (entry.value > entry.key) {
+        // Ladder
+        canvas.drawLine(start, end, ladderPaint);
+      } else {
+        // Snake (curved)
+        final path = Path();
+        path.moveTo(start.dx, start.dy);
+
+        final midX = (start.dx + end.dx) / 2;
+        path.cubicTo(midX, start.dy, midX, end.dy, end.dx, end.dy);
+
+        canvas.drawPath(path, snakePaint);
+      }
+    }
+  }
+
+  Offset getCellCenter(int cell, double cellSize) {
+    int index = cell - 1;
+    int row = index ~/ 10;
+    int col = index % 10;
+
+    if (row.isOdd) {
+      col = 9 - col;
+    }
+
+    double x = col * cellSize + cellSize / 2;
+    double y = (9 - row) * cellSize + cellSize / 2;
+
+    return Offset(x, y);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
