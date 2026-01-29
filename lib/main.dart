@@ -27,12 +27,48 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   int playerPosition = 1;
 
+  Map<int, int> snakeAndLadders = {
+    16: 6,
+    47: 26,
+    49: 11,
+    62: 19,
+    64: 60,
+    87: 24,
+    93: 73,
+    95: 75,
+    98: 78,
+    1: 38,
+    4: 14,
+    9: 31,
+    21: 42,
+    28: 84,
+    36: 44,
+    51: 67,
+    71: 91,
+    80: 100,
+  };
+
   void rollDice() {
     setState(() {
       int dice = (1 + (6 * (DateTime.now().millisecondsSinceEpoch % 6) / 6))
           .floor();
       playerPosition += dice;
+
       if (playerPosition > 100) playerPosition = 100;
+
+      if (snakeAndLadders.containsKey(playerPosition)) {
+        playerPosition = snakeAndLadders[playerPosition]!;
+      }
+
+      if (playerPosition == 100) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("You Win!"),
+            content: const Text("Congratulations 🎉"),
+          ),
+        );
+      }
     });
   }
 
