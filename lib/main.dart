@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() {
   runApp(const MyApp());
@@ -25,9 +26,17 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  //Player Positions
   int player1Position = 1;
   int player2Position = 1;
+
+  //Turn Control
   bool isPlayer1Turn = true;
+
+  //Dice
+  final random = Random();
+  int currentDice = 1;
+  bool isRolling = false;
 
   Map<int, int> snakeAndLadders = {
     16: 6,
@@ -73,11 +82,23 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  void rollDice() {
-    setState(() {
-      int dice = (1 + (6 * (DateTime.now().millisecondsSinceEpoch % 6) / 6))
-          .floor();
+  void rollDice() async {
+    if (isRolling) return;
 
+    setState(() {
+      isRolling = true;
+    });
+
+    //Animate dice for 1 sec
+    for (int i = 0; i < 10; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      setState(() {
+        currentDice = random.nextInt(6) + 1;
+      });
+    }
+    int dice = currentDice;
+
+    setState(() {
       if (isPlayer1Turn) {
         player1Position += dice;
         if (player1Position > 100) player1Position = 100;
@@ -105,6 +126,7 @@ class _GameScreenState extends State<GameScreen> {
       }
 
       isPlayer1Turn = !isPlayer1Turn;
+      isRolling = false;
     });
   }
 
@@ -162,7 +184,21 @@ class _GameScreenState extends State<GameScreen> {
             isPlayer1Turn ? "Player 1's Turn" : "Player 2's Turn",
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          ElevatedButton(onPressed: rollDice, child: const Text("Roll Dice")),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) {
+              return RotationTransition(turns: animation, child: child);
+            },
+            child: Text(
+              currentDice.toString(),
+              key: ValueKey(currentDice),
+              style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: isRolling ? null : rollDice,
+            child: const Text("Roll Dice"),
+          ),
         ],
       ),
     );
