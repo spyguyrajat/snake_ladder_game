@@ -1,16 +1,40 @@
-# snake_ladder_game
+# Snake and Ladder Game (Flutter)
 
-A new Flutter project.
+A simple Snake and LAdder Game built using **Flutter**.
+This project demonstrates grid based UI, turn based logic, dice animation and game rules implementation.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Features Implemented
 
-A few resources to get you started if this is your first Flutter project:
+### Game Board
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 10x10 grid
+- Each cell displays it's number
+- Visual markers for player positions
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Two Player Support
+
+- Player 1 (Red)
+- Player 2 (Blue)
+- Turn-based gameplay
+- Current player's turn displayed
+
+### Dice System
+
+- Random dice generation (1-6) using dart:math
+- Dice roll animation
+- Dice button disabled while rolling
+
+### Snakes and Ladders
+
+- Predefined snakes and ladders using `Map<int, int>`
+- Automatic jump when landing on snake or ladder
+
+### Win Condition
+
+- Player wins when reaching cell 100
+- Popup dialog shown on win
+- Option to restart the game
+
+---
