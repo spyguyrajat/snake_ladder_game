@@ -38,3 +38,37 @@ This project demonstrates grid based UI, turn based logic, dice animation and ga
 - Option to restart the game
 
 ---
+
+## How to Play
+
+1. Press **Roll Dice**
+2. Player moves based on dice number
+3. If player lands on:
+
+- ladder -> moves up
+- snake -> moves down
+
+4. Turns alternate between Player 1 and Player 2
+5. First player to reach **100** wins
+
+---
+
+## Tech Stack
+
+- Flutter
+- Dart
+
+---
+
+### Prerequisites
+
+- Flutter SDK installed
+- Android Studio/ VS Code
+- Emulator or physical device
+
+### Run the game
+
+```bash
+flutter pub get
+flutter run
+```
